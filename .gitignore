@@ -425,6 +425,9 @@ test-results/
 # Mac bundle stuff
 *.dmg
 *.app
+# Git on Windows matches ignore patterns case-insensitively, so "*.app" above
+# also swallows the "Lumen.App" project folder. Keep it under version control.
+!/src/Lumen.App/
 
 # content below from: https://github.com/github/gitignore/blob/main/Global/macOS.gitignore
 # General

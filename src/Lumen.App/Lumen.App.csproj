@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!--
+      The "-windows10.0.19041.0" suffix gives us the Windows Runtime (WinRT) projections,
+      e.g. Windows.Media.Ocr for text recognition, straight from C#. 19041 = Windows 10 2004.
+    -->
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <!-- Only for NotifyIcon (tray icon) and Screen; all windows are WPF. -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <!-- Required by [LibraryImport], the source-generated P/Invoke used in Interop/NativeMethods.cs. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>Lumen.App</RootNamespace>
+    <AssemblyName>Lumen</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\lumen.ico</ApplicationIcon>
+    <!-- ONNX Runtime ships native DLLs per CPU architecture; x64 is what almost every PC runs. -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <!-- WPF0001: Application.ThemeMode (the Fluent theme) is flagged experimental in .NET 9. -->
+    <!-- WFO0003: the WinForms analyzer wants DPI set through WinForms APIs, but WPF owns this
+         process and reads DPI awareness from app.manifest, which is the correct place here. -->
+    <NoWarn>$(NoWarn);WPF0001;WFO0003</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- WPF and WinForms both define Application, MessageBox, Clipboard...; keep WinForms out of the global usings. -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lumen.Core\Lumen.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.12" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.12" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\lumen.ico" />
+  </ItemGroup>
+
+</Project>

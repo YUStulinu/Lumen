@@ -1,0 +1,230 @@
+<Window x:Class="Lumen.App.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:Lumen.App.ViewModels"
+        xmlns:controls="clr-namespace:Lumen.App.Controls"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
+        Title="Lumen Settings"
+        Icon="/Assets/lumen.ico"
+        Width="780" Height="740" MinWidth="680" MinHeight="520"
+        WindowStartupLocation="CenterScreen"
+        UseLayoutRounding="True">
+
+    <Grid Margin="16,12,16,14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TabControl Grid.Row="0">
+            <!-- ================= General ================= -->
+            <TabItem Header="General">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="4,0,12,0">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SectionHeader}" Text="Keyboard shortcuts" />
+                        <TextBlock Style="{StaticResource HelpText}"
+                                   Text="Click a box and press the combination you want. Backspace clears it. Shortcuts are global: they work in every application." />
+                        <Grid Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="220" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="Ask about the selected text" VerticalAlignment="Center" />
+                            <TextBox Grid.Row="0" Grid.Column="1" Margin="0,0,0,6" controls:HotkeyRecorder.IsEnabled="True"
+                                     Text="{Binding AskHotkey, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Grid.Row="1" Text="Read a screen region (OCR)" VerticalAlignment="Center" />
+                            <TextBox Grid.Row="1" Grid.Column="1" controls:HotkeyRecorder.IsEnabled="True"
+                                     Text="{Binding SnipHotkey, UpdateSourceTrigger=PropertyChanged}" />
+                        </Grid>
+                        <CheckBox Margin="0,10,0,0" IsChecked="{Binding DoubleTapCtrl}"
+                                  Content="Also open the assistant when I tap Ctrl twice" />
+                        <TextBlock Style="{StaticResource HelpText}"
+                                   Text="Uses a low-level keyboard hook that sees key presses system-wide (they are only counted, never stored or sent anywhere)." />
+
+                        <TextBlock Style="{StaticResource SectionHeader}" Text="Which assistant answers" />
+                        <ComboBox ItemsSource="{x:Static vm:SettingsViewModel.RoutingModes}" SelectedItem="{Binding RoutingMode}" Width="260" HorizontalAlignment="Left" />
+                        <TextBlock Style="{StaticResource HelpText}"
+                                   Text="LocalFirst: private and free, Claude steps in when the local model is missing, fails or the text is too long. CloudFirst: best quality, local model when offline. LocalOnly never uses the network." />
+
+                        <TextBlock Style="{StaticResource SectionHeader}" Text="Window" />
+                        <CheckBox IsChecked="{Binding AlwaysOnTop}" Content="Keep the assistant above other windows" Margin="0,2" />
+                        <CheckBox IsChecked="{Binding HideOnDeactivate}" Content="Hide the assistant when I click elsewhere" Margin="0,2" />
+                        <CheckBox IsChecked="{Binding StartWithWindows}" Content="Start Lumen when I sign in to Windows" Margin="0,2" />
+
+                        <TextBlock Style="{StaticResource SectionHeader}" Text="Preferred language" />
+                        <TextBox Text="{Binding PreferredLanguage, UpdateSourceTrigger=PropertyChanged}" Width="260" HorizontalAlignment="Left" />
+                        <TextBlock Style="{StaticResource HelpText}" Text="Used by the Translate action, e.g. Romanian, English, German." />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ================= Local model ================= -->
+            <TabItem Header="Local model">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="4,0,12,0">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SectionHeader}" Text="Model folder (ONNX Runtime GenAI)" />
+                        <TextBlock Style="{StaticResource HelpText}">
+                            The folder of one model variant, containing genai_config.json and the .onnx files.
+                            Recommended: Phi-4-mini-instruct, variant cpu-int4-rtn-block-32-acc-level-4 (about 4.7 GB). Download it with scripts\download-model.ps1 (see the README).
+                        </TextBlock>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Browse…" Margin="6,0,0,0" Command="{Binding BrowseModelCommand}" />
+                            <TextBox Text="{Binding ModelPath, UpdateSourceTrigger=PropertyChanged}" />
+                        </DockPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <Button Content="Test local model" Command="{Binding TestLocalModelCommand}" />
+                            <Button Content="Where to get models" Margin="6,0,0,0" Command="{Binding OpenModelCatalogCommand}" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding LocalTestResult}" TextWrapping="Wrap" Margin="0,8,0,0"
+                                   Visibility="{Binding LocalTestResult, Converter={StaticResource StringToVisibility}}" />
+
+                        <TextBlock Style="{StaticResource SectionHeader}" Text="Generation" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="220" />
+                                <ColumnDefinition Width="160" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="Chat template" VerticalAlignment="Center" />
+                            <ComboBox Grid.Row="0" Grid.Column="1" Margin="0,3" ItemsSource="{x:Static vm:SettingsViewModel.PromptFormats}" SelectedItem="{Binding PromptFormat}" />
+                            <TextBlock Grid.Row="1" Text="Context window (tokens)" VerticalAlignment="Center" />
+                            <TextBox Grid.Row="1" Grid.Column="1" Margin="0,3" Text="{Binding MaxContextTokens}" />
+                            <TextBlock Grid.Row="2" Text="Maximum answer (tokens)" VerticalAlignment="Center" />
+                            <TextBox Grid.Row="2" Grid.Column="1" Margin="0,3" Text="{Binding LocalMaxOutputTokens}" />
+                            <TextBlock Grid.Row="3" Text="Temperature (0 = deterministic)" VerticalAlignment="Center" />
+                            <TextBox Grid.Row="3" Grid.Column="1" Margin="0,3" Text="{Binding Temperature}" />
+                            <TextBlock Grid.Row="4" Text="Unload after idle (minutes, 0 = never)" VerticalAlignment="Center" />
+                            <TextBox Grid.Row="4" Grid.Column="1" Margin="0,3" Text="{Binding UnloadAfterIdleMinutes}" />
+                        </Grid>
+                        <CheckBox Margin="0,8,0,0" IsChecked="{Binding PreloadOnStartup}" Content="Load the model when Lumen starts (faster first answer, uses RAM)" />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ================= Claude ================= -->
+            <TabItem Header="Claude">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="4,0,12,0">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SectionHeader}" Text="Anthropic API key" />
+                        <PasswordBox x:Name="ApiKeyBox" PasswordChanged="OnApiKeyChanged" />
+                        <TextBlock Style="{StaticResource HelpText}" Text="{Binding ApiKeyStatus}" />
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Test Claude" Command="{Binding TestClaudeCommand}" />
+                            <Button Content="Remove saved key" Margin="6,0,0,0" Command="{Binding ClearApiKeyCommand}" />
+                            <Button Content="Get an API key" Margin="6,0,0,0" Command="{Binding OpenApiKeyPageCommand}" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding ClaudeTestResult}" TextWrapping="Wrap" Margin="0,8,0,0"
+                                   Visibility="{Binding ClaudeTestResult, Converter={StaticResource StringToVisibility}}" />
+
+                        <TextBlock Style="{StaticResource SectionHeader}" Text="Model" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="220" />
+                                <ColumnDefinition Width="200" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="Model" VerticalAlignment="Center" />
+                            <ComboBox Grid.Row="0" Grid.Column="1" Margin="0,3" IsEditable="True"
+                                      ItemsSource="{x:Static vm:SettingsViewModel.SuggestedClaudeModels}"
+                                      Text="{Binding ClaudeModel, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Grid.Row="1" Text="Effort" VerticalAlignment="Center" />
+                            <ComboBox Grid.Row="1" Grid.Column="1" Margin="0,3"
+                                      ItemsSource="{x:Static vm:SettingsViewModel.EffortLevels}" SelectedItem="{Binding Effort}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={StaticResource EmptyLabel}, ConverterParameter='(model default)'}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <TextBlock Grid.Row="2" Text="Maximum answer (tokens)" VerticalAlignment="Center" />
+                            <TextBox Grid.Row="2" Grid.Column="1" Margin="0,3" Text="{Binding ClaudeMaxOutputTokens}" />
+                        </Grid>
+                        <TextBlock Style="{StaticResource HelpText}"
+                                   Text="Effort trades depth for speed and cost. 'low' keeps a hotkey assistant snappy; raise it for harder questions. Choose '(model default)' for models without effort support, such as Haiku." />
+                        <CheckBox IsChecked="{Binding SendScreenshots}" Content="Send the screenshot itself (not only its OCR text) for screen captures" Margin="0,4" />
+                        <CheckBox IsChecked="{Binding UseServerSideFallbacks}" Content="If Claude declines a request, let the API retry it on a fallback model" Margin="0,4" />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ================= Capture ================= -->
+            <TabItem Header="Capture">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="4,0,12,0">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SectionHeader}" Text="Reading the selection" />
+                        <TextBlock Style="{StaticResource HelpText}"
+                                   Text="Lumen first asks the application through UI Automation (no clipboard involved). If that returns nothing, it can simulate Ctrl+C and restore your clipboard afterwards." />
+                        <CheckBox IsChecked="{Binding UseClipboardFallback}" Content="Use Ctrl+C when UI Automation finds nothing" />
+                        <TextBlock Text="Never send Ctrl+C to these programs (comma separated process names):" Margin="0,10,0,4" />
+                        <TextBox Text="{Binding ExcludedProcesses, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" />
+                        <TextBlock Style="{StaticResource HelpText}" Text="In a terminal, Ctrl+C interrupts the running program instead of copying, so terminals are excluded by default." />
+
+                        <TextBlock Style="{StaticResource SectionHeader}" Text="Text recognition (OCR)" />
+                        <ComboBox ItemsSource="{Binding OcrLanguages}" SelectedItem="{Binding OcrLanguage}" Width="260" HorizontalAlignment="Left">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource EmptyLabel}, ConverterParameter='(Windows display languages)'}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <TextBlock Style="{StaticResource HelpText}"
+                                   Text="Uses the OCR engine built into Windows; it works offline. Languages come from Windows Settings → Time &amp; language → Language &amp; region." />
+
+                        <TextBlock Style="{StaticResource SectionHeader}" Text="Limits" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Maximum captured characters" VerticalAlignment="Center" Width="220" />
+                            <TextBox Text="{Binding MaxCapturedChars}" Width="160" />
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ================= About ================= -->
+            <TabItem Header="About">
+                <StackPanel Margin="4,16,12,0">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/Assets/lumen.ico" Width="48" Height="48" Margin="0,0,12,0" />
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Lumen" FontSize="20" FontWeight="SemiBold" />
+                            <TextBlock x:Name="VersionText" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource HelpText}" Margin="0,16,0,0"
+                               Text="A native Windows AI assistant: global hotkeys, UI Automation, Windows OCR, local inference with ONNX Runtime GenAI and Claude as a fallback." />
+                    <TextBlock Text="Settings file" Style="{StaticResource SectionHeader}" />
+                    <TextBlock Text="{Binding SettingsFilePath}" TextWrapping="Wrap" />
+                    <Button Content="Open settings.json in Notepad" Margin="0,8,0,0" HorizontalAlignment="Left" Command="{Binding OpenSettingsFileCommand}" />
+                    <TextBlock Style="{StaticResource HelpText}" Text="Custom quick actions can be added to the customActions list in settings.json (see the README)." />
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+
+        <!-- ================= Footer ================= -->
+        <DockPanel Grid.Row="1" Margin="0,12,0,0">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Content="Cancel" IsCancel="True" Width="96" Click="OnCancelClick" />
+                <Button Content="Save" IsDefault="True" Width="96" Margin="8,0,0,0" Style="{DynamicResource AccentButtonStyle}" Command="{Binding SaveCommand}" />
+            </StackPanel>
+            <TextBlock Text="{Binding ValidationError}" Foreground="{DynamicResource SystemFillColorCriticalBrush}" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,12,0" />
+        </DockPanel>
+    </Grid>
+</Window>

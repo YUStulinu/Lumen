@@ -1,0 +1,75 @@
+<Application x:Class="Lumen.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:Lumen.App.Converters"
+             ThemeMode="System"
+             ShutdownMode="OnExplicitShutdown">
+    <!--
+        ThemeMode="System" (new in .NET 9) applies the Windows 11 Fluent styles to every WPF
+        control and follows the user's light/dark setting and accent color automatically.
+        ShutdownMode="OnExplicitShutdown": closing or hiding windows never ends a tray app;
+        only "Exit Lumen" in the tray menu calls Shutdown().
+        There is no StartupUri: App.OnStartup builds the services and decides what to show.
+    -->
+    <Application.Resources>
+        <ResourceDictionary>
+            <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+            <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility" />
+            <conv:NullToVisibilityConverter x:Key="NullToVisibility" />
+            <conv:StringToVisibilityConverter x:Key="StringToVisibility" />
+            <conv:EmptyLabelConverter x:Key="EmptyLabel" />
+
+            <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+
+            <Style x:Key="IconText" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+
+            <Style x:Key="SectionHeader" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Margin" Value="0,16,0,6" />
+            </Style>
+
+            <Style x:Key="HelpText" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="TextWrapping" Value="Wrap" />
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                <Setter Property="Margin" Value="0,2,0,8" />
+            </Style>
+
+            <!--
+                A read-only RichTextBox used purely to display formatted answers (it allows selecting
+                and copying text, which a TextBlock does not). The Fluent theme draws an input border
+                and focus underline; this bare template keeps only the document host.
+            -->
+            <Style x:Key="MarkdownBox" TargetType="RichTextBox">
+                <Setter Property="IsReadOnly" Value="True" />
+                <Setter Property="IsDocumentEnabled" Value="True" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="RichTextBox">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="False"
+                                          HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled" />
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="Card" TargetType="Border">
+                <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="Padding" Value="12" />
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
