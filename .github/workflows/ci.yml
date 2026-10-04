@@ -1,0 +1,43 @@
+# Builds and tests every push and pull request on a Windows runner.
+# Pushing a tag such as v1.0.0 also publishes the portable zip as a release asset.
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write # needed only to attach files to a release
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore
+        run: dotnet restore Lumen.sln
+
+      - name: Build
+        run: dotnet build Lumen.sln -c Release --no-restore
+
+      - name: Test
+        run: dotnet test tests/Lumen.Core.Tests -c Release --no-build
+
+      - name: Publish portable zip
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          ./scripts/publish.ps1 -Version $version -SkipTests
+
+      - name: Create GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*.zip
